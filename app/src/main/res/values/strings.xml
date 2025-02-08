@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Pokédex</string>
+    <string name="pkm_det_no_evolution">This Pokémon does not evolve.</string>
+    <string name="pkm_det_title">Pokémon Search</string>
+    <string name="pkm_det_subtitle">Enter Pokémon name</string>
+    <string name="search_hint">Search</string>
+    <string name="pkm_list_title">Pokémon<b>Box</b></string>
+    <string name="pkm_list_subtitle">Cerca un Pokémon tramite nome o numero di Pokédex nazionale</string>
+</resources>
