@@ -73,10 +73,10 @@ fun PokemonDetailScreen(
     pokemonName: String,
     viewModel: PokemonViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.pokemonDetailUiState.collectAsState()
 
     LaunchedEffect(pokemonName) {
-        viewModel.searchPokemon(pokemonName)
+        viewModel.searchPokemonDetail(pokemonName) // ✅ Usa la funzione aggiornata
     }
 
     Scaffold(
@@ -101,16 +101,16 @@ fun PokemonDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BackgroundColor)
-                .padding(16.dp, innerPadding.calculateTopPadding(), 16.dp, 0.dp)
+                .padding(16.dp, innerPadding.calculateTopPadding(), 16.dp, 0.dp),
+            contentAlignment = Alignment.Center
         ) {
             when {
-                uiState.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                uiState.pokemon != null -> PokemonDetailContent(uiState.pokemon!!)
+                uiState.isLoading -> CircularProgressIndicator()
                 uiState.errorMessage.isNotEmpty() -> Text(
                     uiState.errorMessage,
-                    color = ErrorColor,
-                    modifier = Modifier.align(Alignment.Center)
+                    color = ErrorColor
                 )
+                uiState.pokemon != null -> PokemonDetailContent(uiState.pokemon!!)
             }
         }
     }
@@ -125,64 +125,7 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(0.65f)
-                            .padding(end = 8.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            Text(
-                                text = pokemon.name.replaceFirstChar { it.uppercase() },
-                                style = Typography.headlineMedium
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "#${pokemon.nationalDexNumber.toString().padStart(3, '0')}",
-                                color = TextHighlight
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = pokemon.species,
-                            style = Typography.bodyMedium,
-                            color = TextHighlight
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            pokemon.types.forEach { type ->
-                                TypeBadge(type)
-                                Spacer(modifier = Modifier.width(8.dp))
-                            }
-                        }
-                    }
-                    Column(
-                        modifier = Modifier
-                            .weight(0.35f)
-                            .padding(start = 8.dp),
-                        verticalArrangement = Arrangement.Top
-                    ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AsyncImage(
-                            model = pokemon.imageUrl,
-                            contentDescription = "Pokemon Image",
-                            modifier = Modifier.size(100.dp)
-                        )
-                    }
-                }
-            }
+            PokemonHeader(pokemon)
             Text(
                 text = pokemon.pokedexEntry,
                 style = Typography.bodyMedium
@@ -190,56 +133,124 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
         }
 
         item {
-            val tabTitles = listOf("Info", "Stats", "Evolution")
-            var selectedTab by remember { mutableIntStateOf(0) }
+            PokemonTabs(pokemon)
+        }
+    }
+}
 
-            Column {
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    containerColor = BackgroundColor,
-                    divider = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .background(DividerColor)
-                        )
-                    },
-                    indicator = { tabPositions ->
-                        Box(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[selectedTab])
-                                .height(3.dp)
-                                .background(TabIndicatorColor)
-                        )
-                    }
+@Composable
+fun PokemonHeader(pokemon: PokemonDetail) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(0.65f)
+                    .padding(end = 8.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    tabTitles.forEachIndexed { index, title ->
-                        Tab(
-                            selected = selectedTab == index,
-                            onClick = { selectedTab = index },
-                            modifier = Modifier.background(BackgroundColor),
-                            text = {
-                                Text(
-                                    text = title,
-                                    color = TextPrimary,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        )
+                    Text(
+                        text = pokemon.name.replaceFirstChar { it.uppercase() },
+                        style = Typography.headlineMedium
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "#${pokemon.nationalDexNumber.toString().padStart(3, '0')}",
+                        color = TextHighlight
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = pokemon.species,
+                    style = Typography.bodyMedium,
+                    color = TextHighlight
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    pokemon.types.forEach { type ->
+                        TypeBadge(type)
+                        Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
-
-                when (selectedTab) {
-                    0 -> AboutTab(pokemon)
-                    1 -> BaseStatsTab(pokemon)
-                    2 -> EvolutionTab(pokemon)
-                }
+            }
+            Column(
+                modifier = Modifier
+                    .weight(0.35f)
+                    .padding(start = 8.dp),
+                verticalArrangement = Arrangement.Top
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                AsyncImage(
+                    model = pokemon.imageUrl,
+                    contentDescription = "Pokemon Image",
+                    modifier = Modifier.size(100.dp)
+                )
             }
         }
     }
 }
+
+@Composable
+fun PokemonTabs(pokemon: PokemonDetail) {
+    val tabTitles = listOf("Info", "Stats", "Evolution")
+    var selectedTab by remember { mutableIntStateOf(0) }
+
+    Column {
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = BackgroundColor,
+            divider = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(DividerColor)
+                )
+            },
+            indicator = { tabPositions ->
+                Box(
+                    modifier = Modifier
+                        .tabIndicatorOffset(tabPositions[selectedTab])
+                        .height(3.dp)
+                        .background(TabIndicatorColor)
+                )
+            }
+        ) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    modifier = Modifier.background(BackgroundColor),
+                    text = {
+                        Text(
+                            text = title,
+                            color = TextPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                )
+            }
+        }
+
+        when (selectedTab) {
+            0 -> AboutTab(pokemon)
+            1 -> BaseStatsTab(pokemon)
+            2 -> EvolutionTab(pokemon)
+        }
+    }
+}
+
 
 @Composable
 fun AboutTab(pokemon: PokemonDetail) {
