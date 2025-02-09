@@ -3,16 +3,7 @@ package com.grighetti.pokemonbox.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -21,25 +12,20 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -54,24 +40,18 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.grighetti.pokemonbox.navigateToDetail
-import com.grighetti.pokemonbox.ui.LoadingContent
-import com.grighetti.pokemonbox.ui.ShimmerBox
-import com.grighetti.pokemonbox.ui.TypeBadge
-import com.grighetti.pokemonbox.ui.theme.BackgroundColor
-import com.grighetti.pokemonbox.ui.theme.CornerRadius
-import com.grighetti.pokemonbox.ui.theme.DefaultLarge
-import com.grighetti.pokemonbox.ui.theme.DefaultMedium
-import com.grighetti.pokemonbox.ui.theme.DefaultSmall
-import com.grighetti.pokemonbox.ui.theme.DividerColor
-import com.grighetti.pokemonbox.ui.theme.HintColor
-import com.grighetti.pokemonbox.ui.theme.ImageSize
-import com.grighetti.pokemonbox.ui.theme.LoaderSize
-import com.grighetti.pokemonbox.ui.theme.SearchBarHeight
-import com.grighetti.pokemonbox.ui.theme.TextPrimary
-import com.grighetti.pokemonbox.ui.theme.TextSecondary
-import com.grighetti.pokemonbox.ui.theme.Typography
+import com.grighetti.pokemonbox.ui.*
+import com.grighetti.pokemonbox.ui.theme.*
 import com.grighetti.pokemonbox.viewmodel.PokemonViewModel
+import java.util.Locale
 
+/**
+ * Composable function representing the Pokémon search screen.
+ * Displays a search bar and a dynamically loaded Pokémon list.
+ *
+ * @param navController Navigation controller for navigating to Pokémon details.
+ * @param viewModel ViewModel managing the Pokémon data.
+ */
 @Composable
 fun PokemonSearchScreen(
     navController: NavController,
@@ -81,10 +61,10 @@ fun PokemonSearchScreen(
     val pokemonListUiState by viewModel.pokemonListUiState.collectAsState()
     val listState = rememberLazyListState()
 
-    // ✅ Carica la prima pagina di Pokémon
+    // Load Pokémon list on first launch
     LaunchedEffect(Unit) { viewModel.loadPokemonList() }
 
-    // ✅ Carica più Pokémon quando l'utente scorre in basso
+    // Automatically load more Pokémon when scrolling near the bottom
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleItemIndex ->
@@ -95,10 +75,20 @@ fun PokemonSearchScreen(
             }
     }
 
+    // Get the status bar height dynamically
+    val statusBarHeight = with(LocalDensity.current) {
+        WindowInsets.statusBars.getTop(this).toDp()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(DefaultLarge, DefaultLarge, DefaultLarge, 0.dp),
+            .padding(
+                DefaultLarge,
+                statusBarHeight + DefaultLarge,
+                DefaultLarge,
+                0.dp
+            ), // Ensures proper padding above the status bar
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DefaultLarge)
     ) {
@@ -152,9 +142,12 @@ fun PokemonSearchScreen(
     }
 }
 
-
 /**
  * Displays a single Pokémon list item with shimmer effects while loading.
+ *
+ * @param name Pokémon name.
+ * @param viewModel ViewModel handling Pokémon details.
+ * @param navController Navigation controller for navigating to details.
  */
 @Composable
 fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: NavController) {
@@ -268,6 +261,9 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
     }
 }
 
+/**
+ * Composable function for the search bar that filters Pokémon by name or number.
+ */
 @Composable
 fun SearchBar(
     query: String,
@@ -284,12 +280,14 @@ fun SearchBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(DefaultMedium)
     ) {
+        // **Search Icon**
         Icon(
             imageVector = Icons.Default.Search,
             contentDescription = "Search",
             tint = HintColor
         )
 
+        // **Search Input Field**
         Box(modifier = Modifier.weight(1f)) {
             if (query.isEmpty()) {
                 Text(
@@ -301,7 +299,11 @@ fun SearchBar(
             }
             BasicTextField(
                 value = query,
-                onValueChange = onQueryChange,
+                onValueChange = {
+                    onQueryChange(it.replaceFirstChar { char ->
+                        if (char.isLowerCase()) char.titlecase(Locale.ROOT) else char.toString()
+                    })
+                },
                 textStyle = TextStyle(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
@@ -313,5 +315,20 @@ fun SearchBar(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
+        if (query.isNotEmpty()) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.Send,
+                contentDescription = "Search Pokémon",
+                tint = Color(0xff290402),
+                modifier = Modifier
+                    .clickable { onSearch() }
+                    .padding(4.dp)
+                    .size(24.dp)
+            )
+        }
     }
 }
+
+
+

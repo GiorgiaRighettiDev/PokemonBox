@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Pokédex</string>
+    <string name="app_name">PokemonBox</string>
     <string name="pkm_det_no_evolution">This Pokémon does not evolve.</string>
     <string name="pkm_det_title">Pokémon Search</string>
     <string name="pkm_det_subtitle">Enter Pokémon name</string>
