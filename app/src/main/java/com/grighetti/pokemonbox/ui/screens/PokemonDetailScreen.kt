@@ -155,7 +155,6 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                     )
                 }
             }
-            //Text(text = pokemon.pokedexEntry, style = Typography.bodyMedium)
         }
         item { PokemonTabs(pokemon) }
     }
