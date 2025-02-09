@@ -4,17 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,13 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -177,17 +161,12 @@ fun PokemonSearchScreen(
 
 @Composable
 fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: NavController) {
-    var details by remember { mutableStateOf<PokemonDetail?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    val detailsCache by viewModel.pokemonDetailsCache.collectAsState()
+    val pokemonDetail = detailsCache[name]
 
-    // Load Pokémon details in the background
     LaunchedEffect(name) {
-        try {
-            details = viewModel.getPokemonDetail(name)
-        } catch (e: Exception) {
-            Log.e("PokemonListItem", "Error loading Pokémon: $name", e)
-        } finally {
-            isLoading = false
+        if (pokemonDetail == null) {
+            viewModel.loadPokemonDetail(name)
         }
     }
 
@@ -199,7 +178,6 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
                 .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Pokémon image with caching enabled
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -207,27 +185,23 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
                     .background(Color(0xFFF8F8F8)),
                 contentAlignment = Alignment.CenterStart
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
-                } else {
-                    details?.let { pokemon ->
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(pokemon.imageUrl)
-                                .diskCachePolicy(CachePolicy.ENABLED)
-                                .memoryCachePolicy(CachePolicy.ENABLED)
-                                .build(),
-                            contentDescription = "${pokemon.name} sprite",
-                            modifier = Modifier.size(64.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
+                when (pokemonDetail) {
+                    null -> CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                    else -> AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(pokemonDetail.imageUrl)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .build(),
+                        contentDescription = "${pokemonDetail.name} sprite",
+                        modifier = Modifier.size(64.dp),
+                        contentScale = ContentScale.Fit
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Pokémon info
             Column {
                 Text(
                     text = name.replaceFirstChar { it.uppercase() },
@@ -236,32 +210,20 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
 
                 Spacer(modifier = Modifier.height(2.dp))
 
-                details?.let { pokemon ->
+                if (pokemonDetail != null) {
                     Row {
-                        pokemon.types.forEach { type ->
+                        pokemonDetail.types.forEach { type ->
                             TypeBadge(type)
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                     }
-
                     Spacer(modifier = Modifier.height(4.dp))
-
-                    // Pokédex description
                     Text(
-                        text = pokemon.pokedexEntry,
+                        text = pokemonDetail.pokedexEntry,
                         style = Typography.bodyMedium
                     )
                 }
             }
         }
-
-        // Divider between Pokémon items
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color(0xFFE0E0E0))
-        )
     }
 }
-

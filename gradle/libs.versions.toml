@@ -1,4 +1,5 @@
 [versions]
+accompanistPlaceholderMaterial3 = "0.31.4-beta"
 agp = "8.8.0"
 coil = "2.4.0"
 converterGson = "2.11.0"
@@ -21,6 +22,10 @@ retrofit = "2.11.0"
 retrofit2KotlinxSerializationConverter = "0.8.0"
 
 [libraries]
+accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version.ref = "accompanistPlaceholderMaterial3" }
+accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanistPlaceholderMaterial3" }
+accompanist-placeholder-material3 = { module = "com.google.accompanist:accompanist-placeholder-material3", version.ref = "accompanistPlaceholderMaterial3" }
+accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistPlaceholderMaterial3" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }

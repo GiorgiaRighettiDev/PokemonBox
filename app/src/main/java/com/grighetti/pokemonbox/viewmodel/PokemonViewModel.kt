@@ -12,43 +12,68 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(
-    private val repository: PokemonRepository // ✅ Iniettato con Hilt
+    private val repository: PokemonRepository
 ) : ViewModel() {
 
+    // StateFlow to manage the UI state
     private val _uiState = MutableStateFlow(PokemonUiState())
     val uiState: StateFlow<PokemonUiState> = _uiState
 
+    // StateFlow for the list of Pokémon names
     private val _pokemonList = MutableStateFlow<List<String>>(emptyList())
     val pokemonList: StateFlow<List<String>> = _pokemonList
+
+    // Cache to store loaded Pokémon details
+    private val _pokemonDetailsCache = MutableStateFlow<Map<String, PokemonDetail>>(emptyMap())
+    val pokemonDetailsCache: StateFlow<Map<String, PokemonDetail>> = _pokemonDetailsCache
 
     var offset = 0
     var isLoading = false
     var hasMoreData = true
 
+    /**
+     * Searches for a specific Pokémon by name.
+     * If the Pokémon is cached, it updates the UI state immediately.
+     * Otherwise, it loads the details and updates the UI once available.
+     */
     fun searchPokemon(name: String) {
         viewModelScope.launch {
             Log.d("PokeAPI", "🔎 Searching for: $name")
             _uiState.value = PokemonUiState(isLoading = true)
 
-            try {
-                val pokemon = getPokemonDetail(name.lowercase())
-                _uiState.value = PokemonUiState(pokemon = pokemon)
-                Log.d("PokeAPI", "✅ Details loaded for: ${pokemon.name}")
-            } catch (e: Exception) {
-                Log.e("PokeAPI", "❌ Error fetching Pokémon: $name", e)
-                _uiState.value = PokemonUiState(errorMessage = "Pokémon not found")
+            // Check if the Pokémon is already cached
+            if (_pokemonDetailsCache.value.containsKey(name)) {
+                Log.d("PokeAPI", "✅ Pokémon $name found in cache!")
+                _uiState.value = PokemonUiState(pokemon = _pokemonDetailsCache.value[name])
+                return@launch
+            }
+
+            // Load Pokémon details if not cached
+            loadPokemonDetail(name)
+
+            // Observe cache updates and update UI when data is available
+            _pokemonDetailsCache.collect { cache ->
+                cache[name]?.let { pokemon ->
+                    _uiState.value = PokemonUiState(pokemon = pokemon)
+                    Log.d("PokeAPI", "✅ Pokémon $name successfully loaded!")
+                    return@collect
+                }
             }
         }
     }
 
+    /**
+     * Loads a paginated list of Pokémon names.
+     * Avoids unnecessary API calls if data is already loading or there is no more data.
+     */
     fun loadPokemonList() {
-        if (isLoading || !hasMoreData) return  // Prevent multiple unnecessary requests
+        if (isLoading || !hasMoreData) return
         isLoading = true
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -58,7 +83,7 @@ class PokemonViewModel @Inject constructor(
                 val response = repository.getPokemonList(limit = 20, offset = offset)
                 val names = response.results.map { it.name }
 
-                _pokemonList.value += names
+                _pokemonList.update { it + names }
                 offset += 20
                 hasMoreData = response.next != null
 
@@ -71,49 +96,63 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-    suspend fun getPokemonDetail(name: String): PokemonDetail =
-        withContext(Dispatchers.IO) {
-            Log.d("PokeAPI", "🔍 Fetching details for: $name")
+    /**
+     * Loads detailed data for a Pokémon.
+     * Uses caching to avoid redundant API requests.
+     */
+    fun loadPokemonDetail(name: String) {
+        if (_pokemonDetailsCache.value.containsKey(name)) return
 
-            val detailResponse = repository.getPokemonDetail(name)
-            val speciesResponse = repository.getPokemonSpecies(name)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d("PokeAPI", "🔍 Fetching details for: $name")
 
-            val nationalDexNumber = speciesResponse.pokedexNumbers
-                .firstOrNull { it.pokedex.name == "national" }?.entryNumber ?: 0
+                val detailResponse = repository.getPokemonDetail(name)
+                val speciesResponse = repository.getPokemonSpecies(name)
 
-            val evolutionUrl = speciesResponse.evolutionChain.url
-            val pokemonId = Utils.extractIdFromUrl(evolutionUrl)
-            val evolutionChainResponse = repository.getEvolutionChain(pokemonId)
+                val nationalDexNumber = speciesResponse.pokedexNumbers
+                    .firstOrNull { it.pokedex.name == "national" }?.entryNumber ?: 0
 
-            val evolutionChain = evolutionChainResponse.extractEvolutionChain()
+                val evolutionUrl = speciesResponse.evolutionChain.url
+                val pokemonId = Utils.extractIdFromUrl(evolutionUrl)
+                val evolutionChainResponse = repository.getEvolutionChain(pokemonId)
 
-            val officialArtworkUrl = detailResponse.sprites.other?.officialArtwork?.frontDefault
-                ?: detailResponse.sprites.frontDefault // ✅ Fallback to default sprite if artwork is missing
+                val evolutionChain = evolutionChainResponse.extractEvolutionChain()
 
-            val pokedexEntry = speciesResponse.flavorTextEntries
-                .firstOrNull { it.language.name == "en" }?.text
-                ?.replace("\n", " ") // ✅ Rimuove gli a capo strani
-                ?: "No Pokédex entry available"
+                val officialArtworkUrl = detailResponse.sprites.other?.officialArtwork?.frontDefault
+                    ?: detailResponse.sprites.frontDefault
 
-            return@withContext PokemonDetail(
-                id = pokemonId,
-                name = detailResponse.name,
-                height = detailResponse.height / 10.0,
-                weight = detailResponse.weight / 10.0,
-                types = detailResponse.types.map { it.type.name },
-                imageUrl = officialArtworkUrl,
-                abilities = detailResponse.abilities.map { it.ability.name },
-                stats = detailResponse.stats.associate { it.stat.name.uppercase() to it.baseStat },
-                evolutionChain = evolutionChain,
-                species = speciesResponse.genera.firstOrNull { it.language.name == "en" }?.genus
-                    ?: "Unknown",
-                color = speciesResponse.color.name,
-                eggGroups = speciesResponse.eggGroups.map { it.name },
-                eggCycle = speciesResponse.hatchCounter.toString(),
-                genderRatio = Utils.calculateGenderRatio(speciesResponse.genderRate),
-                nationalDexNumber = nationalDexNumber,
-                pokedexEntry = pokedexEntry // ✅ Aggiunto
-            )
+                val pokedexEntry = speciesResponse.flavorTextEntries
+                    .firstOrNull { it.language.name == "en" }?.text
+                    ?.replace("\n", " ")
+                    ?: "No Pokédex entry available"
 
+                val newPokemon = PokemonDetail(
+                    id = pokemonId,
+                    name = detailResponse.name,
+                    height = detailResponse.height / 10.0,
+                    weight = detailResponse.weight / 10.0,
+                    types = detailResponse.types.map { it.type.name },
+                    imageUrl = officialArtworkUrl,
+                    abilities = detailResponse.abilities.map { it.ability.name },
+                    stats = detailResponse.stats.associate { it.stat.name.uppercase() to it.baseStat },
+                    evolutionChain = evolutionChain,
+                    species = speciesResponse.genera.firstOrNull { it.language.name == "en" }?.genus
+                        ?: "Unknown",
+                    color = speciesResponse.color.name,
+                    eggGroups = speciesResponse.eggGroups.map { it.name },
+                    eggCycle = speciesResponse.hatchCounter.toString(),
+                    genderRatio = Utils.calculateGenderRatio(speciesResponse.genderRate),
+                    nationalDexNumber = nationalDexNumber,
+                    pokedexEntry = pokedexEntry
+                )
+
+                // Update cache with the new Pokémon details
+                _pokemonDetailsCache.update { it + (name to newPokemon) }
+
+            } catch (e: Exception) {
+                Log.e("PokeAPI", "❌ Error loading Pokémon detail: $name", e)
+            }
         }
+    }
 }

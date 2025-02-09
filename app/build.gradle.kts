@@ -90,6 +90,12 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
 
-
+    // Accompanist
+    implementation (libs.accompanist.placeholder.material3)
+    implementation (libs.accompanist.coil)
+    implementation (libs.accompanist.systemuicontroller)
+    implementation (libs.accompanist.navigation.animation)
 }
+
+
 
