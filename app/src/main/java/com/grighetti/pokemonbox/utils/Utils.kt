@@ -1,10 +1,16 @@
 package com.grighetti.pokemonbox.utils
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import com.grighetti.pokemonbox.data.domain.EvolutionStage
 import com.grighetti.pokemonbox.data.model.EvolutionChainLink
 import com.grighetti.pokemonbox.data.model.EvolutionChainResponse
+import com.grighetti.pokemonbox.ui.theme.DefaultMedium
 import java.util.Locale
 
 object Utils {
@@ -128,5 +134,6 @@ object Utils {
         extractStages(this.chain)
         return evolutionStages
     }
+
 
 }

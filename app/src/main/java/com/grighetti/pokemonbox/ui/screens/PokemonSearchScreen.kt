@@ -3,7 +3,16 @@ package com.grighetti.pokemonbox.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -13,8 +22,19 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,8 +54,22 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.grighetti.pokemonbox.navigateToDetail
-import com.grighetti.pokemonbox.ui.*
-import com.grighetti.pokemonbox.ui.theme.*
+import com.grighetti.pokemonbox.ui.LoadingContent
+import com.grighetti.pokemonbox.ui.ShimmerBox
+import com.grighetti.pokemonbox.ui.TypeBadge
+import com.grighetti.pokemonbox.ui.theme.BackgroundColor
+import com.grighetti.pokemonbox.ui.theme.CornerRadius
+import com.grighetti.pokemonbox.ui.theme.DefaultLarge
+import com.grighetti.pokemonbox.ui.theme.DefaultMedium
+import com.grighetti.pokemonbox.ui.theme.DefaultSmall
+import com.grighetti.pokemonbox.ui.theme.DividerColor
+import com.grighetti.pokemonbox.ui.theme.HintColor
+import com.grighetti.pokemonbox.ui.theme.ImageSize
+import com.grighetti.pokemonbox.ui.theme.LoaderSize
+import com.grighetti.pokemonbox.ui.theme.SearchBarHeight
+import com.grighetti.pokemonbox.ui.theme.TextPrimary
+import com.grighetti.pokemonbox.ui.theme.TextSecondary
+import com.grighetti.pokemonbox.ui.theme.Typography
 import com.grighetti.pokemonbox.viewmodel.PokemonViewModel
 
 @Composable
@@ -64,9 +98,9 @@ fun PokemonSearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(PaddingLarge, PaddingLarge, PaddingLarge, 0.dp),
+            .padding(DefaultLarge, DefaultLarge, DefaultLarge, 0.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(PaddingLarge)
+        verticalArrangement = Arrangement.spacedBy(DefaultLarge)
     ) {
         // **Title**
         Text(
@@ -88,10 +122,17 @@ fun PokemonSearchScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(PaddingMedium)
+            verticalArrangement = Arrangement.spacedBy(DefaultMedium)
         ) {
             items(pokemonListUiState.pokemonList, key = { it }) { pokemonName ->
                 PokemonListItem(pokemonName, viewModel, navController)
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(DefaultLarge, DefaultMedium, DefaultLarge, 0.dp),
+                    thickness = 1.dp,
+                    color = DividerColor
+                )
             }
 
             // **Loading Indicator**
@@ -100,7 +141,7 @@ fun PokemonSearchScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = PaddingLarge),
+                            .padding(top = DefaultLarge),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(modifier = Modifier.size(LoaderSize))
@@ -134,9 +175,9 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
                 indication = ripple(),
                 onClick = { navController.navigateToDetail(name) }
             )
-            .padding(vertical = PaddingMedium),
+            .padding(vertical = DefaultMedium),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PaddingLarge)
+        horizontalArrangement = Arrangement.spacedBy(DefaultLarge)
     ) {
         // **Pokémon Image**
         Box(
@@ -164,12 +205,18 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(PaddingSmall)
+            verticalArrangement = Arrangement.spacedBy(DefaultSmall)
         ) {
             // **Pokémon Name**
             LoadingContent(
                 isLoading = pokemonDetail == null,
-                loading = { ShimmerBox(modifier = Modifier.width(100.dp).height(20.dp)) },
+                loading = {
+                    ShimmerBox(
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(20.dp)
+                    )
+                },
                 content = {
                     Text(
                         text = pokemonDetail?.name ?: "",
@@ -182,16 +229,18 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
             LoadingContent(
                 isLoading = pokemonDetail == null,
                 loading = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(PaddingSmall)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(DefaultSmall)) {
                         repeat(2) {
                             ShimmerBox(
-                                modifier = Modifier.width(40.dp).height(PaddingLarge)
+                                modifier = Modifier
+                                    .width(40.dp)
+                                    .height(DefaultLarge)
                             )
                         }
                     }
                 },
                 content = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(PaddingSmall)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(DefaultSmall)) {
                         pokemonDetail!!.types.forEach { TypeBadge(it) }
                     }
                 }
@@ -201,9 +250,13 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
             LoadingContent(
                 isLoading = pokemonDetail == null,
                 loading = {
-                    Column(verticalArrangement = Arrangement.spacedBy(PaddingSmall)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(DefaultSmall)) {
                         repeat(2) {
-                            ShimmerBox(modifier = Modifier.fillMaxWidth().height(14.dp))
+                            ShimmerBox(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(14.dp)
+                            )
                         }
                     }
                 },
@@ -227,9 +280,9 @@ fun SearchBar(
             .fillMaxWidth()
             .height(SearchBarHeight)
             .background(BackgroundColor, shape = RoundedCornerShape(CornerRadius))
-            .padding(PaddingMedium),
+            .padding(DefaultMedium),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PaddingMedium)
+        horizontalArrangement = Arrangement.spacedBy(DefaultMedium)
     ) {
         Icon(
             imageVector = Icons.Default.Search,
