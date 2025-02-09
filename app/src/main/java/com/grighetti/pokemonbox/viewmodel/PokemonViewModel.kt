@@ -129,7 +129,7 @@ class PokemonViewModel @Inject constructor(
 
                 val newPokemon = PokemonDetail(
                     id = pokemonId,
-                    name = detailResponse.name,
+                    name = detailResponse.name.replaceFirstChar { it.uppercase()},
                     height = detailResponse.height / 10.0,
                     weight = detailResponse.weight / 10.0,
                     types = detailResponse.types.map { it.type.name },

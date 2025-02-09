@@ -53,10 +53,16 @@ import com.grighetti.pokemonbox.R
 import com.grighetti.pokemonbox.data.domain.EvolutionStage
 import com.grighetti.pokemonbox.data.domain.PokemonDetail
 import com.grighetti.pokemonbox.ui.TypeBadge
-import com.grighetti.pokemonbox.ui.theme.BricolageGrotesqueFontFamily
+import com.grighetti.pokemonbox.ui.theme.BackgroundColor
+import com.grighetti.pokemonbox.ui.theme.DividerColor
+import com.grighetti.pokemonbox.ui.theme.ErrorColor
+import com.grighetti.pokemonbox.ui.theme.StatBadColor
+import com.grighetti.pokemonbox.ui.theme.StatGoodColor
+import com.grighetti.pokemonbox.ui.theme.TabIndicatorColor
+import com.grighetti.pokemonbox.ui.theme.TextHighlight
+import com.grighetti.pokemonbox.ui.theme.TextPrimary
 import com.grighetti.pokemonbox.ui.theme.Typography
 import com.grighetti.pokemonbox.utils.Utils
-import com.grighetti.pokemonbox.utils.Utils.parseColor
 import com.grighetti.pokemonbox.viewmodel.PokemonViewModel
 import java.util.Locale
 
@@ -74,19 +80,19 @@ fun PokemonDetailScreen(
     }
 
     Scaffold(
-        modifier = Modifier.background(Color.White),
+        modifier = Modifier.background(BackgroundColor),
         topBar = {
             TopAppBar(
-                title = { /*Text(text = pokemonName.replaceFirstChar { it.uppercase() })*/ },
+                title = { },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    containerColor = BackgroundColor,
+                    titleContentColor = TextPrimary,
+                    navigationIconContentColor = TextPrimary
                 )
             )
         }
@@ -94,7 +100,7 @@ fun PokemonDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(BackgroundColor)
                 .padding(16.dp, innerPadding.calculateTopPadding(), 16.dp, 0.dp)
         ) {
             when {
@@ -102,7 +108,7 @@ fun PokemonDetailScreen(
                 uiState.pokemon != null -> PokemonDetailContent(uiState.pokemon!!)
                 uiState.errorMessage.isNotEmpty() -> Text(
                     uiState.errorMessage,
-                    color = MaterialTheme.colorScheme.error,
+                    color = ErrorColor,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -112,12 +118,10 @@ fun PokemonDetailScreen(
 
 @Composable
 fun PokemonDetailContent(pokemon: PokemonDetail) {
-    val backgroundColor = parseColor(pokemon.color)
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(BackgroundColor),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -125,7 +129,6 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                //.background(backgroundColor)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -134,8 +137,8 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                 ) {
                     Column(
                         modifier = Modifier
-                            .weight(0.65f) // 30% of the width
-                            .padding(end = 8.dp) // Add spacing between columns
+                            .weight(0.65f)
+                            .padding(end = 8.dp)
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.Start,
@@ -148,19 +151,17 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 "#${pokemon.nationalDexNumber.toString().padStart(3, '0')}",
-                                color = Color(0xFF202749)
+                                color = TextHighlight
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = pokemon.species,
                             style = Typography.bodyMedium,
-                            color = Color(0xFF202749)
+                            color = TextHighlight
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             pokemon.types.forEach { type ->
                                 TypeBadge(type)
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -186,13 +187,7 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                 text = pokemon.pokedexEntry,
                 style = Typography.bodyMedium
             )
-            /*
-            AboutTab(pokemon)
-            BaseStatsTab(pokemon)
-            EvolutionTab(pokemon)
-            */
         }
-
 
         item {
             val tabTitles = listOf("Info", "Stats", "Evolution")
@@ -201,13 +196,13 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
             Column {
                 TabRow(
                     selectedTabIndex = selectedTab,
-                    containerColor = Color.White,
+                    containerColor = BackgroundColor,
                     divider = {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(1.dp)
-                                .background(Color(0xFFE0E0E0))
+                                .background(DividerColor)
                         )
                     },
                     indicator = { tabPositions ->
@@ -215,8 +210,7 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                             modifier = Modifier
                                 .tabIndicatorOffset(tabPositions[selectedTab])
                                 .height(3.dp)
-                                .background(Color.DarkGray)
-                            //.background(parseColor(pokemon.color))
+                                .background(TabIndicatorColor)
                         )
                     }
                 ) {
@@ -224,12 +218,11 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                         Tab(
                             selected = selectedTab == index,
                             onClick = { selectedTab = index },
-                            modifier = Modifier.background(Color.White),
+                            modifier = Modifier.background(BackgroundColor),
                             text = {
                                 Text(
                                     text = title,
-                                    color = Color(0xff290402),
-                                    fontFamily = BricolageGrotesqueFontFamily,
+                                    color = TextPrimary,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -245,7 +238,6 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                 }
             }
         }
-
     }
 }
 
@@ -315,6 +307,7 @@ fun BaseStatsTab(pokemon: PokemonDetail) {
     }
 }
 
+
 @Composable
 fun StatRow(name: String, value: Int, progress: Float) {
     Row(
@@ -328,14 +321,14 @@ fun StatRow(name: String, value: Int, progress: Float) {
             modifier = Modifier.width(80.dp),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            color = Color(0xff290402)
+            color = TextPrimary
         )
         Text(
             text = value.toString(),
             modifier = Modifier.width(40.dp),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            color = Color(0xff290402)
+            color = TextPrimary
         )
         Box(
             modifier = Modifier
@@ -348,7 +341,7 @@ fun StatRow(name: String, value: Int, progress: Float) {
                 modifier = Modifier
                     .fillMaxWidth(progress)
                     .height(8.dp)
-                    .background(if (value >= 50) Color(0xFF4CAF50) else Color(0xFFD32F2F))
+                    .background(if (value >= 50) StatGoodColor else StatBadColor)
             )
         }
     }
