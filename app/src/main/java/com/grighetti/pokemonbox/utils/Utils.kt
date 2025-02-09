@@ -1,6 +1,11 @@
 package com.grighetti.pokemonbox.utils
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
+import com.grighetti.pokemonbox.data.domain.EvolutionStage
+import com.grighetti.pokemonbox.data.model.EvolutionChainLink
+import com.grighetti.pokemonbox.data.model.EvolutionChainResponse
+import java.util.Locale
 
 object Utils {
 
@@ -76,10 +81,52 @@ object Utils {
         return url.split("/").dropLast(1).last().toInt()
     }
 
-    // Funzione per ottenere l'URL dell'immagine del Pokémon
-    fun getPokemonImageUrl(pokemonId: Int): String {
-        return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$pokemonId.png"
+    private fun getPokemonImageUrl(pokemonId: Int): String {
+        return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$pokemonId.png"
     }
 
+
+    fun EvolutionChainResponse.extractEvolutionChain(): List<EvolutionStage> {
+        val evolutionStages = mutableListOf<EvolutionStage>()
+
+        fun extractStages(chain: EvolutionChainLink, parentName: String? = null) {
+            val id = Utils.extractIdFromUrl(chain.species.url)
+
+            val evolutionDetail = chain.evolutionDetails.firstOrNull()
+            val evolutionLevel = evolutionDetail?.minLevel ?: -1
+
+            val evolutionTrigger = evolutionDetail?.trigger?.name ?: "Unknown"
+            val evolutionItem =
+                evolutionDetail?.item?.name?.replace("-", " ")?.capitalize(Locale.ROOT)
+
+            Log.d(
+                "EvolutionChain",
+                "🔄 Processing: ${chain.species.name} ➡ MinLevel: $evolutionLevel | Trigger: $evolutionTrigger"
+            )
+
+            val evolutionMethodString = when (evolutionTrigger) {
+                "level-up" -> if (evolutionLevel > 0) "Level $evolutionLevel" else "Level Up"
+                "use-item" -> "Use $evolutionItem"
+                "trade" -> "Trade"
+                else -> "Unknown Evolution Method"
+            }
+
+            evolutionStages.add(
+                EvolutionStage(
+                    name = chain.species.name.replaceFirstChar { it.uppercase() },
+                    level = evolutionLevel,
+                    imageUrl = Utils.getPokemonImageUrl(id),
+                    evolutionMethod = evolutionMethodString
+                )
+            )
+
+            chain.evolvesTo.forEach { nextStage ->
+                extractStages(nextStage, chain.species.name)
+            }
+        }
+
+        extractStages(this.chain)
+        return evolutionStages
+    }
 
 }

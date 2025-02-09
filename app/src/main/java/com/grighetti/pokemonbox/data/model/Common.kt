@@ -1,7 +1,10 @@
 package com.grighetti.pokemonbox.data.model
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class NamedAPIResource(val name: String, val url: String)
-
-
-
+@Serializable
+data class NamedAPIResource(
+    @SerialName("name") val name: String,
+    @SerialName("url") val url: String
+)

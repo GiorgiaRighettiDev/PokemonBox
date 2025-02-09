@@ -50,10 +50,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.grighetti.pokemonbox.R
-import com.grighetti.pokemonbox.data.model.EvolutionStage
-import com.grighetti.pokemonbox.data.model.PokemonDetail
+import com.grighetti.pokemonbox.data.domain.EvolutionStage
+import com.grighetti.pokemonbox.data.domain.PokemonDetail
+import com.grighetti.pokemonbox.ui.TypeBadge
 import com.grighetti.pokemonbox.ui.theme.BricolageGrotesqueFontFamily
-import com.grighetti.pokemonbox.ui.theme.InterFontFamily
 import com.grighetti.pokemonbox.ui.theme.Typography
 import com.grighetti.pokemonbox.utils.Utils
 import com.grighetti.pokemonbox.utils.Utils.parseColor
@@ -162,7 +162,7 @@ fun PokemonDetailContent(pokemon: PokemonDetail) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             pokemon.types.forEach { type ->
-                                ListTypeBadge(type)
+                                TypeBadge(type)
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
                         }

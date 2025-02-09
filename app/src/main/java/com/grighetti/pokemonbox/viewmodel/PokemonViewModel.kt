@@ -3,11 +3,11 @@ package com.grighetti.pokemonbox.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grighetti.pokemonbox.data.model.PokemonDetail
-import com.grighetti.pokemonbox.data.model.extractEvolutionChain
+import com.grighetti.pokemonbox.data.domain.PokemonDetail
 import com.grighetti.pokemonbox.data.repository.PokemonRepository
 import com.grighetti.pokemonbox.ui.PokemonUiState
 import com.grighetti.pokemonbox.utils.Utils
+import com.grighetti.pokemonbox.utils.Utils.extractEvolutionChain
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -116,46 +116,4 @@ class PokemonViewModel @Inject constructor(
             )
 
         }
-
-    /*
-        suspend fun oldGetPokemonDetail(name: String): PokemonDetail =
-            withContext(Dispatchers.IO) {
-                Log.d("PokeAPI", "🔍 Fetching details for: $name")
-    
-                val detailResponse = repository.getPokemonDetail(name)
-                val speciesResponse = repository.getPokemonSpecies(name)
-    
-                val nationalDexNumber = speciesResponse.pokedexNumbers
-                    .firstOrNull { it.pokedex.name == "national" }?.entryNumber ?: 0
-    
-                val evolutionUrl = speciesResponse.evolutionChain.url
-                val pokemonId = Utils.extractIdFromUrl(evolutionUrl)
-                val evolutionChainResponse = repository.getEvolutionChain(pokemonId)
-    
-                val evolutionChain = evolutionChainResponse.extractEvolutionChain()
-    
-                val officialArtworkUrl = detailResponse.sprites.other?.officialArtwork?.frontDefault
-                    ?: detailResponse.sprites.frontDefault // ✅ Fallback to default sprite if artwork is missing
-    
-    
-                return@withContext PokemonDetail(
-                    id = pokemonId,
-                    name = detailResponse.name,
-                    height = detailResponse.height / 10.0,
-                    weight = detailResponse.weight / 10.0,
-                    types = detailResponse.types.map { it.type.name },
-                    imageUrl = officialArtworkUrl, // ✅ Using official artwork
-                    abilities = detailResponse.abilities.map { it.ability.name },
-                    stats = detailResponse.stats.associate { it.stat.name.uppercase() to it.baseStat },
-                    evolutionChain = evolutionChain,
-                    species = speciesResponse.genera.firstOrNull { it.language.name == "en" }?.genus
-                        ?: "Unknown",
-                    color = speciesResponse.color.name,
-                    eggGroups = speciesResponse.eggGroups.map { it.name },
-                    eggCycle = speciesResponse.hatchCounter.toString(),
-                    genderRatio = Utils.calculateGenderRatio(speciesResponse.genderRate),
-                    nationalDexNumber = nationalDexNumber
-                )
-            }*/
-
 }

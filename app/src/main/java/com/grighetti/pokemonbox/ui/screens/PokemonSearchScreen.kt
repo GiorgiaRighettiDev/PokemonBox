@@ -53,10 +53,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.grighetti.pokemonbox.data.model.PokemonDetail
+import com.grighetti.pokemonbox.data.domain.PokemonDetail
 import com.grighetti.pokemonbox.navigateToDetail
-import com.grighetti.pokemonbox.ui.theme.BricolageGrotesqueFontFamily
-import com.grighetti.pokemonbox.ui.theme.InterFontFamily
+import com.grighetti.pokemonbox.ui.TypeBadge
 import com.grighetti.pokemonbox.ui.theme.Typography
 import com.grighetti.pokemonbox.viewmodel.PokemonViewModel
 
@@ -240,7 +239,7 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
                 details?.let { pokemon ->
                     Row {
                         pokemon.types.forEach { type ->
-                            ListTypeBadge(type)
+                            TypeBadge(type)
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                     }
@@ -266,20 +265,3 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
     }
 }
 
-@Composable
-fun ListTypeBadge(type: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(25))
-            .background(Color(0xFFeeeeee))
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-    ) {
-        Text(
-            text = type.replaceFirstChar { it.uppercase() },
-            modifier = Modifier.padding(vertical = 0.dp),
-            color = Color(0xFF808080),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}

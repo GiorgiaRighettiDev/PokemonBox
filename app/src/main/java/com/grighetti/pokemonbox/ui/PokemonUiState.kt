@@ -1,8 +1,7 @@
 package com.grighetti.pokemonbox.ui
 
-import com.grighetti.pokemonbox.data.model.PokemonDetail
+import com.grighetti.pokemonbox.data.domain.PokemonDetail
 
-// Modello UI State
 data class PokemonUiState(
     val pokemon: PokemonDetail? = null,
     val isLoading: Boolean = false,

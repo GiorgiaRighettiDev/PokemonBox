@@ -1,31 +1,35 @@
 package com.grighetti.pokemonbox.data.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PokemonSpeciesResponse(
-    @SerializedName("color") val color: NamedAPIResource,
-    @SerializedName("evolution_chain") val evolutionChain: EvolutionChainReference,
-    @SerializedName("genera") val genera: List<Genus>,
-    @SerializedName("egg_groups") val eggGroups: List<NamedAPIResource>,
-    @SerializedName("hatch_counter") val hatchCounter: Int,
-    @SerializedName("gender_rate") val genderRate: Int,
-    @SerializedName("pokedex_numbers") val pokedexNumbers: List<PokedexEntry>,
-    @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry> // ✅ Aggiunto
+    @SerialName("color") val color: NamedAPIResource,
+    @SerialName("evolution_chain") val evolutionChain: EvolutionChainReference,
+    @SerialName("genera") val genera: List<Genus>,
+    @SerialName("egg_groups") val eggGroups: List<NamedAPIResource>,
+    @SerialName("hatch_counter") val hatchCounter: Int,
+    @SerialName("gender_rate") val genderRate: Int,
+    @SerialName("pokedex_numbers") val pokedexNumbers: List<PokedexEntry>,
+    @SerialName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>
 )
 
-
+@Serializable
 data class FlavorTextEntry(
-    @SerializedName("flavor_text") val text: String,
-    val language: NamedAPIResource,
-    val version: NamedAPIResource
+    @SerialName("flavor_text") val text: String,
+    @SerialName("language") val language: NamedAPIResource,
+    @SerialName("version") val version: NamedAPIResource
 )
 
+@Serializable
 data class PokedexEntry(
-    @SerializedName("entry_number") val entryNumber: Int,
-    @SerializedName("pokedex") val pokedex: NamedAPIResource
+    @SerialName("entry_number") val entryNumber: Int,
+    @SerialName("pokedex") val pokedex: NamedAPIResource
 )
 
+@Serializable
 data class Genus(
-    @SerializedName("genus") val genus: String,
-    val language: NamedAPIResource
+    @SerialName("genus") val genus: String,
+    @SerialName("language") val language: NamedAPIResource
 )

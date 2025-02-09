@@ -4,7 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-}
+    id("org.jetbrains.kotlin.plugin.serialization")
+    }
 
 android {
     namespace = "com.grighetti.pokemonbox"
@@ -52,7 +53,7 @@ android {
 }
 
 dependencies {
-
+    // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,6 +62,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,13 +77,15 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // Retrofit
+    // Retrofit con Kotlinx Serialization (🚀 Sostituito Gson)
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
 
     // Coil
     implementation(libs.coil)
     implementation(libs.coil.compose)
 
-
+    // Kotlinx Serialization
+    implementation(libs.kotlinx.serialization.json)
 }
+
