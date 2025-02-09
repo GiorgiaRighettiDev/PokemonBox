@@ -90,6 +90,11 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
 
+    // Accompanist
+    implementation(libs.accompanist.systemuicontroller.v0340)
+    implementation(libs.accompanist.placeholder)
+
+    implementation(libs.androidx.ui.util)
 }
 
 
