@@ -6,8 +6,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/**
+ * Defines the typography styles used throughout the app.
+ */
 val Typography = Typography(
-
     headlineMedium = TextStyle(
         fontFamily = BricolageGrotesqueFontFamily,
         fontWeight = FontWeight.Bold,

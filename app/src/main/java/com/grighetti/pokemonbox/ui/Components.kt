@@ -22,6 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Displays a Pokémon type badge with a rounded background.
+ *
+ * @param type The name of the Pokémon type (e.g., "Fire", "Water").
+ */
 @Composable
 fun TypeBadge(type: String) {
     Box(
@@ -40,6 +45,11 @@ fun TypeBadge(type: String) {
     }
 }
 
+/**
+ * A placeholder box with a shimmer effect, typically used as a loading placeholder.
+ *
+ * @param modifier Modifier to customize the layout.
+ */
 @Composable
 fun ShimmerBox(modifier: Modifier = Modifier) {
     Box(
@@ -50,9 +60,16 @@ fun ShimmerBox(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * Adds a shimmer animation effect to a composable.
+ * This is useful for creating a loading placeholder effect.
+ *
+ * @return A modified [Modifier] with the shimmer effect applied.
+ */
 @Composable
 fun Modifier.shimmerEffect(): Modifier {
     val transition = rememberInfiniteTransition(label = "ShimmerEffect")
+
     val shimmerTranslate by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1000f,
@@ -77,7 +94,13 @@ fun Modifier.shimmerEffect(): Modifier {
         .background(shimmerBrush)
 }
 
-
+/**
+ * Displays either a loading indicator or the actual content based on the loading state.
+ *
+ * @param isLoading Boolean flag indicating whether the content is loading.
+ * @param loading Composable to be shown while loading.
+ * @param content The actual content to display once loading is complete.
+ */
 @Composable
 fun LoadingContent(
     isLoading: Boolean,

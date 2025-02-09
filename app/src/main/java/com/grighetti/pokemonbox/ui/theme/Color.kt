@@ -14,14 +14,11 @@ val Pink40 = Color(0xFF7D5260)
 // General Colors
 val BackgroundColor = Color(0xFFeeeeee)
 val HintColor = Color(0xffc3c3c3)
-val ImageBackgroundColor = Color(0xFFF8F8F8)
 val DividerColor = Color(0xFFE0E0E0)
 
 // Text Colors
 val TextPrimary = Color.Black
 val TextSecondary = HintColor
-
-// Text Colors
 val TextHighlight = Color(0xFF202749)
 val ErrorColor = Color(0xFFD32F2F)
 

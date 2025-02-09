@@ -8,7 +8,7 @@ import com.grighetti.pokemonbox.data.domain.PokemonDetailMapper
 import com.grighetti.pokemonbox.data.repository.PokemonRepository
 import com.grighetti.pokemonbox.ui.PokemonDetailUiState
 import com.grighetti.pokemonbox.ui.PokemonListUiState
-import com.grighetti.pokemonbox.utils.Utils
+import com.grighetti.pokemonbox.utils.PokemonInfoUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -92,7 +92,7 @@ class PokemonViewModel @Inject constructor(
                 val detailResponse = repository.getPokemonDetail(name)
                 val speciesResponse = repository.getPokemonSpecies(name)
                 val evolutionChainResponse = repository.getEvolutionChain(
-                    Utils.extractIdFromUrl(speciesResponse.evolutionChain.url)
+                    PokemonInfoUtils.extractIdFromUrl(speciesResponse.evolutionChain.url)
                 )
 
                 val newPokemon = PokemonDetailMapper.mapToDomain(

@@ -3,8 +3,8 @@ package com.grighetti.pokemonbox.data.domain
 import com.grighetti.pokemonbox.data.model.EvolutionChainResponse
 import com.grighetti.pokemonbox.data.model.PokemonDetailResponse
 import com.grighetti.pokemonbox.data.model.PokemonSpeciesResponse
-import com.grighetti.pokemonbox.utils.Utils
-import com.grighetti.pokemonbox.utils.Utils.extractEvolutionChain
+import com.grighetti.pokemonbox.data.model.extractEvolutionChain
+import com.grighetti.pokemonbox.utils.PokemonInfoUtils
 
 /**
  * Domain model representing a Pokémon's details.
@@ -73,9 +73,9 @@ object PokemonDetailMapper {
         val speciesGenus = speciesResponse.genera
             .firstOrNull { it.language.name == LANGUAGE_EN }?.genus ?: "Unknown"
 
-        val genderRatio = Utils.calculateGenderRatio(speciesResponse.genderRate)
+        val genderRatio = PokemonInfoUtils.calculateGenderRatio(speciesResponse.genderRate)
 
-        val pokemonId = Utils.extractIdFromUrl(speciesResponse.evolutionChain.url)
+        val pokemonId = PokemonInfoUtils.extractIdFromUrl(speciesResponse.evolutionChain.url)
 
         return PokemonDetail(
             id = pokemonId,

@@ -17,9 +17,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class PokeApiService @Inject constructor(
-    private val client: HttpClient
+    private val client: HttpClient,
+    private val baseUrl: String
 ) {
-    private val BASE_URL = "https://pokeapi.co/api/v2/"
 
     /**
      * Fetches a paginated list of Pokémon.
@@ -31,7 +31,7 @@ class PokeApiService @Inject constructor(
      */
     suspend fun getPokemonList(limit: Int, offset: Int): PokemonListResponse {
         return safeApiCall {
-            client.get("$BASE_URL/pokemon") {
+            client.get("$baseUrl/pokemon") {
                 url {
                     parameters.append("limit", limit.toString())
                     parameters.append("offset", offset.toString())
@@ -49,7 +49,7 @@ class PokeApiService @Inject constructor(
      */
     suspend fun getPokemonDetail(name: String): PokemonDetailResponse {
         return safeApiCall {
-            client.get("$BASE_URL/pokemon/$name").body()
+            client.get("$baseUrl/pokemon/$name").body()
         }
     }
 
@@ -62,7 +62,7 @@ class PokeApiService @Inject constructor(
      */
     suspend fun getPokemonSpecies(name: String): PokemonSpeciesResponse {
         return safeApiCall {
-            client.get("$BASE_URL/pokemon-species/$name").body()
+            client.get("$baseUrl/pokemon-species/$name").body()
         }
     }
 
@@ -75,7 +75,7 @@ class PokeApiService @Inject constructor(
      */
     suspend fun getEvolutionChain(id: Int): EvolutionChainResponse {
         return safeApiCall {
-            client.get("$BASE_URL/evolution-chain/$id").body()
+            client.get("$baseUrl/evolution-chain/$id").body()
         }
     }
 

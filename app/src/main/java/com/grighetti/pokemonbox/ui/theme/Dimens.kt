@@ -2,12 +2,12 @@ package com.grighetti.pokemonbox.ui.theme
 
 import androidx.compose.ui.unit.dp
 
-// Commonly used padding values
+// Commonly used values
 val DefaultSmall = 4.dp
 val DefaultMedium = 8.dp
 val DefaultLarge = 16.dp
 
-// Commonly used size values
+// Various size values
 val IconSize = 24.dp
 val ImageSize = 64.dp
 val SearchBarHeight = 44.dp
