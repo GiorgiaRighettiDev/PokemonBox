@@ -2,6 +2,7 @@ package com.grighetti.pokemonbox.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,9 +23,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,11 +53,21 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.grighetti.pokemonbox.navigateToDetail
+import com.grighetti.pokemonbox.ui.LoadingContent
+import com.grighetti.pokemonbox.ui.ShimmerBox
 import com.grighetti.pokemonbox.ui.TypeBadge
 import com.grighetti.pokemonbox.ui.shimmerEffect
 import com.grighetti.pokemonbox.ui.theme.Typography
 import com.grighetti.pokemonbox.viewmodel.PokemonViewModel
 
+/**
+ * This file defines the UI components for the Pokémon search screen.
+ * It includes:
+ * - A search bar for filtering Pokémon by name or number.
+ * - A lazy-loaded list of Pokémon with shimmer effects for placeholders.
+ * - Integration with the ViewModel for fetching Pokémon data.
+ * - Navigation to Pokémon detail pages.
+ */
 @Composable
 fun PokemonSearchScreen(
     navController: NavController,
@@ -66,12 +77,12 @@ fun PokemonSearchScreen(
     val pokemonList by viewModel.pokemonList.collectAsState()
     val listState = rememberLazyListState()
 
-    // Load initial Pokémon list
+    // Load initial Pokémon list when the screen is first launched
     LaunchedEffect(Unit) {
         viewModel.loadPokemonList()
     }
 
-    // Load more Pokémon when scrolling to the bottom
+    // Load more Pokémon when reaching the bottom of the list
     LaunchedEffect(listState.firstVisibleItemIndex, listState.layoutInfo.totalItemsCount) {
         if (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == pokemonList.lastIndex) {
             viewModel.loadPokemonList()
@@ -86,7 +97,7 @@ fun PokemonSearchScreen(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
-        // App title
+        // App title with stylized text
         Text(
             buildAnnotatedString {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Medium)) { append("Pokemon") }
@@ -97,7 +108,7 @@ fun PokemonSearchScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Search bar
+        // Search bar for filtering Pokémon
         Row(modifier = Modifier.fillMaxWidth()) {
             BasicTextField(
                 value = searchQuery,
@@ -157,16 +168,23 @@ fun PokemonSearchScreen(
             }
             // Loading indicator at the end of the list
             item {
-                if (viewModel.isLoading) CircularProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
+                if (viewModel.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
+                }
             }
+
         }
     }
 }
-
 @Composable
 fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: NavController) {
     val detailsCache by viewModel.pokemonDetailsCache.collectAsState()
@@ -182,89 +200,89 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { navController.navigateToDetail(name) }
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(),
+                    onClick = { navController.navigateToDetail(name) }
+                )
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp) // ✅ Replace Spacer with Arrangement.spacedBy
         ) {
-            // Pokémon image with shimmer effect
+            // **Pokémon Image**
             Box(
                 modifier = Modifier
                     .size(64.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF8F8F8)), contentAlignment = Alignment.CenterStart
+                    .background(Color(0xFFF8F8F8)),
+                contentAlignment = Alignment.CenterStart
             ) {
-                if (pokemonDetail == null) Box(modifier = Modifier
-                    .size(64.dp)
-                    .shimmerEffect())
-                else AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(pokemonDetail.imageUrl)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .build(),
-                    contentDescription = "${pokemonDetail.name} sprite",
-                    modifier = Modifier.size(64.dp),
-                    contentScale = ContentScale.Fit
+                LoadingContent(
+                    isLoading = pokemonDetail == null,
+                    loading = { ShimmerBox(modifier = Modifier.size(64.dp)) },
+                    content = {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(pokemonDetail?.imageUrl)
+                                .diskCachePolicy(CachePolicy.ENABLED)
+                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                .build(),
+                            contentDescription = "${pokemonDetail?.name} sprite",
+                            modifier = Modifier.size(64.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column {
-                // Pokémon Name
-                if (pokemonDetail == null) Box(
-                    modifier = Modifier
-                        .width(100.dp)
-                        .height(20.dp)
-                        .shimmerEffect()
-                )
-                else Text(
-                    text = pokemonDetail.name.replaceFirstChar { it.uppercase() },
-                    style = Typography.titleMedium
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Pokémon Types
-                if (pokemonDetail == null) Row {
-                    repeat(2) {
-                        Box(
-                            modifier = Modifier
-                                .width(40.dp)
-                                .height(16.dp)
-                                .shimmerEffect()
-                        ); Spacer(modifier = Modifier.width(4.dp))
-                    }
-                }
-                else Row {
-                    pokemonDetail.types.forEach {
-                        TypeBadge(it); Spacer(
-                        modifier = Modifier.width(
-                            4.dp
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp) // ✅ Replace Spacers
+            ) {
+                // **Pokémon Name**
+                LoadingContent(
+                    isLoading = pokemonDetail == null,
+                    loading = { ShimmerBox(modifier = Modifier.width(100.dp).height(20.dp)) },
+                    content = {
+                        Text(
+                            text = pokemonDetail!!.name.replaceFirstChar { it.uppercase() },
+                            style = Typography.titleMedium
                         )
-                    )
                     }
-                }
+                )
 
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Pokédex Description
-                if (pokemonDetail == null) Column {
-                    repeat(2) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(14.dp)
-                                .shimmerEffect()
-                        ); Spacer(modifier = Modifier.height(4.dp))
+                // **Pokémon Types**
+                LoadingContent(
+                    isLoading = pokemonDetail == null,
+                    loading = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            repeat(2) {
+                                ShimmerBox(modifier = Modifier.width(40.dp).height(16.dp))
+                            }
+                        }
+                    },
+                    content = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            pokemonDetail!!.types.forEach { TypeBadge(it) }
+                        }
                     }
-                }
-                else Text(text = pokemonDetail.pokedexEntry, style = Typography.bodyMedium)
+                )
+
+                // **Pokédex Description**
+                LoadingContent(
+                    isLoading = pokemonDetail == null,
+                    loading = {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            repeat(2) {
+                                ShimmerBox(modifier = Modifier.fillMaxWidth().height(14.dp))
+                            }
+                        }
+                    },
+                    content = {
+                        Text(text = pokemonDetail!!.pokedexEntry, style = Typography.bodyMedium)
+                    }
+                )
             }
         }
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(Color(0xFFE0E0E0)))
     }
 }
+

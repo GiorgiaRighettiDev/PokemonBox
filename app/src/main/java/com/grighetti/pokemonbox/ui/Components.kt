@@ -40,6 +40,15 @@ fun TypeBadge(type: String) {
     }
 }
 
+@Composable
+fun ShimmerBox(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .shimmerEffect()
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.LightGray.copy(alpha = 0.3f))
+    )
+}
 
 @Composable
 fun Modifier.shimmerEffect(): Modifier {
@@ -66,4 +75,18 @@ fun Modifier.shimmerEffect(): Modifier {
     return this
         .clip(RoundedCornerShape(4.dp))
         .background(shimmerBrush)
+}
+
+
+@Composable
+fun LoadingContent(
+    isLoading: Boolean,
+    loading: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    if (isLoading) {
+        loading()
+    } else {
+        content()
+    }
 }
