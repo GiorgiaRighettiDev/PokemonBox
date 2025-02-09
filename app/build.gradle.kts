@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.ui.util)
     implementation(libs.androidx.material3)
 
     // Testing
@@ -94,7 +95,6 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller.v0340)
     implementation(libs.accompanist.placeholder)
 
-    implementation(libs.androidx.ui.util)
 }
 
 
