@@ -1,26 +1,40 @@
 package com.grighetti.pokemonbox.data.remote
 
-import com.grighetti.pokemonbox.data.model.EvolutionChainResponse
 import com.grighetti.pokemonbox.data.model.PokemonDetailResponse
 import com.grighetti.pokemonbox.data.model.PokemonListResponse
 import com.grighetti.pokemonbox.data.model.PokemonSpeciesResponse
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import com.grighetti.pokemonbox.data.model.EvolutionChainResponse
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
-interface PokeApiService {
-    @GET("pokemon/{name}")
-    suspend fun getPokemonDetail(@Path("name") name: String): PokemonDetailResponse
+@Singleton
+class PokeApiService @Inject constructor(
+    private val client: HttpClient
+) {
+    private val BASE_URL = "https://pokeapi.co/api/v2/"
 
-    @GET("pokemon-species/{name}")
-    suspend fun getPokemonSpecies(@Path("name") name: String): PokemonSpeciesResponse
+    suspend fun getPokemonList(limit: Int, offset: Int): PokemonListResponse {
+        return client.get("$BASE_URL/pokemon") {
+            url {
+                parameters.append("limit", limit.toString())
+                parameters.append("offset", offset.toString())
+            }
+        }.body()
+    }
 
-    @GET("evolution-chain/{id}/")
-    suspend fun getEvolutionChain(@Path("id") id: Int): EvolutionChainResponse
+    suspend fun getPokemonDetail(name: String): PokemonDetailResponse {
+        return client.get("$BASE_URL/pokemon/$name").body()
+    }
 
-    @GET("pokemon")
-    suspend fun getPokemonList(
-        @Query("limit") limit: Int,
-        @Query("offset") offset: Int
-    ): PokemonListResponse
+    suspend fun getPokemonSpecies(name: String): PokemonSpeciesResponse {
+        return client.get("$BASE_URL/pokemon-species/$name").body()
+    }
+
+    suspend fun getEvolutionChain(id: Int): EvolutionChainResponse {
+        return client.get("$BASE_URL/evolution-chain/$id").body()
+    }
 }

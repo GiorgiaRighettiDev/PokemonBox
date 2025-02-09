@@ -115,7 +115,7 @@ fun PokemonSearchScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
-                    navigateToDetail(navController, searchQuery)
+                    navController.navigateToDetail(searchQuery)
                 }),
                 modifier = Modifier
                     .weight(1f)
@@ -195,7 +195,7 @@ fun PokemonListItem(name: String, viewModel: PokemonViewModel, navController: Na
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { navigateToDetail(navController, name) }
+                .clickable { navController.navigateToDetail(name) }
                 .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
