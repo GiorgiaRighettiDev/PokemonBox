@@ -37,10 +37,11 @@ The project is built with **Jetpack Compose** and follows **modern Android devel
 ---
 
 ## 🛠️ Future Improvements
-🔹 Filtering System: Implement real-time filtering instead of static search  
-🔹 Improved UI: Add animations and dark mode  
-🔹 More Pokémon Data: Display movesets, weakness, all sprites and other advanced details  
-🔹 Favorites System: Allow users to save their favorite Pokémon  
+🔹 **Filtering System:** Implement real-time filtering instead of static search  
+🔹 **Improved UI:** Add animations and dark mode  
+🔹 **More Pokémon Data:** Display movesets, weakness, all sprites and other advanced details  
+🔹 **Favorites System:** Allow users to save their favorite Pokémon  
+🔹 **Automated Testing:** Add unit and UI tests to ensure app stability
 
 ---
 
